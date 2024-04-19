@@ -2,27 +2,32 @@ import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 const Budget = () => {
-    const { budget } = useContext(AppContext);
-    const { remaining } = useContext(AppContext);
-    const { totalExpenses } = useContext(AppContext)
+    var { budget, expenses, dispatch } = useContext(AppContext);
     const [newBudget, setNewBudget] = useState(budget);
-    const [newRemaining, setNewRemaining] = useState(remaining)
-    const [newTotalExpenses, setNewTotalExpenses] = useState(totalExpenses);
+    const totalExpenses = expenses.reduce((total, item) => {
+        return (total += item.cost);
+    }, 0);
     const handleBudgetChange = (event) => {
+        //alert("newBudget BEFORE: " + newBudget);
         if(event.target.value > 20000) {
-            alert("Budget cannot exceed 20,000");
+            alert("Budget cannot exceed 20,000.");
             setNewBudget(20000);
-            //setNewRemaining(newBudget - newTotalExpenses);
+            budget = 20000; // for some reason I have to keep updating budget manually prolly due to async comms
         }
-        else if(event.target.value < newRemaining) {
+        else if(event.target.value < totalExpenses) {
             alert("You cannot reduce the budget value lower than spending.");
-            setNewBudget(newRemaining);
-            //setNewRemaining(newBudget - newTotalExpenses);
+            setNewBudget(totalExpenses);
+            budget = totalExpenses;
         }
         else {
             setNewBudget(event.target.value);
-            //setNewRemaining(newBudget - newTotalExpenses);
+            budget = event.target.value;
         }
+        // dispatch the set budget even so the UI updates
+        dispatch({
+            type: 'SET_BUDGET',
+            payload: budget,
+        });
     }
     return (
 <div className='alert alert-secondary'>
